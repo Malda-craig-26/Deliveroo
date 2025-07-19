@@ -12,6 +12,8 @@ flask-cors = "*"
 python-dotenv = "*"
 werkzeug = "*"
 psycopg2-binary = "*"
+email-validator = "*"
+marshmallow = "*"
 
 [dev-packages]
 
