@@ -1,5 +1,5 @@
-from . import db, bcrypt,generate_password_hash, check_password_hash
-from sqlalchemy.orm import validates
+from .. import db
+import bcrypt
 
 class User(db.Model):
     __tablename__ = "users"
@@ -9,14 +9,16 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
     is_admin = db.Column(db.Boolean, default=False)
-    parcels = db.relationship("Parcel", backref="user", lazy=True)
 
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-        
+    parcels = db.relationship("Parcel", back_populates="user", cascade="all, delete-orphan")
+
+    @property
+    def password(self):
+        raise AttributeError("Password is write-only.")
+
+    @password.setter
+    def password(self, plaintext):
+        self.password_hash = bcrypt.generate_password_hash(plaintext).decode('utf-8')
+
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-    
-        
-    
-    
+        return bcrypt.check_password_hash(self.password_hash, password)
