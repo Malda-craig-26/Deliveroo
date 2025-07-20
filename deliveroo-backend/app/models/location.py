@@ -1,19 +1,20 @@
-from . import db
+from app.config import db
+from datetime import datetime
 
 class Location(db.Model):
-    __tablename__ = "locations"
+    __tablename__ = 'locations'
 
     id = db.Column(db.Integer, primary_key=True)
-    current_location = db.Column(db.String, nullable=True)
+    name = db.Column(db.String(120), nullable=False, unique=True)
 
-    parcels = db.relationship("Parcel", back_populates="location")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
 
-    def set_password(self, password):
-        self.current_location = password  
-
-    def check_password(self, password):
-        return self.current_location == password
-
-    def __repr__(self):
-        return f"<Location {self.id} - {self.current_location}>"

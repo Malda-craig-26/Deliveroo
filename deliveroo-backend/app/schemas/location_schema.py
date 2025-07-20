@@ -1,16 +1,13 @@
 from app.config import ma
-from app.models.user import User
+from app.models.location import Location
 
-class UserSchema(ma.SQLAlchemySchema):
+class LocationSchema(ma.SQLAlchemySchema):
     class Meta:
-        model = User
+        model = Location
         load_instance = True
         ordered = True
 
     id = ma.auto_field()
     name = ma.auto_field()
-    email = ma.auto_field()
-    role = ma.auto_field()
-    is_deleted = ma.auto_field()
     created_at = ma.auto_field()
     updated_at = ma.auto_field()
