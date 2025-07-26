@@ -1,4 +1,5 @@
-from app.config import db
+from app.extensions import db
+
 from datetime import datetime
 
 class Status(db.Model):
@@ -10,6 +11,7 @@ class Status(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
+    parcels = db.relationship('Parcel', back_populates='status', lazy=True)
     def to_dict(self):
         return {
             "id": self.id,

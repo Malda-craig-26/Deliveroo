@@ -1,8 +1,9 @@
 from flask import Blueprint, jsonify, request
 from app.models.user import User
 from app.utils.decorators import admin_required
-from app.config import db
-from sqlalchemy import functions as func
+from app.extensions import db
+
+from sqlalchemy.sql import func
 
 user_bp = Blueprint('user_bp', __name__, url_prefix='/users')
 

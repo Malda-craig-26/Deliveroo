@@ -1,6 +1,5 @@
 from flask import jsonify
-from app.models.user import User
-from app import db
+from app.extensions import db
 from flask_jwt_extended import create_access_token
 from sqlalchemy.exc import IntegrityError
 from email_validator import validate_email, EmailNotValidError
@@ -10,6 +9,7 @@ def register_user(data: dict):
     """
     Register a new user.
     """
+    from app.models.user import User
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
@@ -56,6 +56,7 @@ def login_user(data: dict):
     """
     Authenticate a user and return a JWT token.
     """
+    from app.models.user import User
     email = data.get("email")
     password = data.get("password")
 

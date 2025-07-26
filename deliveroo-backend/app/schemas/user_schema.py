@@ -1,4 +1,4 @@
-from app.config import ma
+from app import ma
 from app.models.user import User
 
 class UserSchema(ma.SQLAlchemySchema):

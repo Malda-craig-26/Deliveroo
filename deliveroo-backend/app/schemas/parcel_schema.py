@@ -1,4 +1,4 @@
-from app.config import ma
+from app import ma
 from app.models.parcel import Parcel
 
 class ParcelSchema(ma.SQLAlchemySchema):

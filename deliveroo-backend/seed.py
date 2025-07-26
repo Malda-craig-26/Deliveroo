@@ -1,5 +1,5 @@
 from app import create_app
-from app.config import db
+from app.extensions import db
 from app.models.user import User
 from app.models.location import Location
 from app.models.parcel import Parcel
@@ -9,12 +9,14 @@ from datetime import datetime
 
 app = create_app()
 
-with app.app_context():
-    print("🌱 Seeding database...")
-
 def seed_data():
     db.drop_all()
     db.create_all()
+
+      # Prevent reseeding if users already exist
+    if User.query.first():
+        print("⚠️ Database already seeded. Aborting.")
+        return
 
     # Seed Users (active and soft-deleted)
     users = [
@@ -36,7 +38,7 @@ def seed_data():
         Location(city="Mombasa", address="Moi Avenue"),
         Location(city="Kisumu", address="Oginga Odinga St"),
     ]
-    db.session.bulk_save_objects(locations)
+    db.session.add_all(locations)
     db.session.commit()
 
     # Seed Statuses
@@ -46,7 +48,7 @@ def seed_data():
         Status(name="Delivered"),
         Status(name="Cancelled")
     ]
-    db.session.bulk_save_objects(statuses)
+    db.session.add_all(statuses)
     db.session.commit()
 
     # Seed Parcels (only for active users)
@@ -54,25 +56,27 @@ def seed_data():
     parcels = [
         Parcel(
             description="Electronics",
-            sender_id=active_users[2].id,
-            origin_id=locations[0].id,
-            destination_id=locations[1].id,
+            user_id=active_users[2].id,
+            origin=locations[0].id,
+            destination=locations[1].id,
             status_id=statuses[0].id,
             created_at=datetime.utcnow()
         ),
         Parcel(
             description="Books",
-            sender_id=active_users[2].id,
-            origin_id=locations[1].id,
-            destination_id=locations[2].id,
+            user_id=active_users[2].id,
+            origin=locations[1].id,
+            destination=locations[2].id,
             status_id=statuses[1].id,
             created_at=datetime.utcnow()
         )
     ]
-    db.session.bulk_save_objects(parcels)
+    db.session.add_all(parcels)
     db.session.commit()
 
     print("✅ Database seeded with users (including soft-deleted), locations, statuses, and parcels.")
 
 if __name__ == "__main__":
-    seed_data()
+    with app.app_context():
+        print("🌱 Seeding database...")
+        seed_data()

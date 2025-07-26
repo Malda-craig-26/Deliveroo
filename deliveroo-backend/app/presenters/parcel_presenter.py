@@ -1,7 +1,8 @@
 from flask import jsonify
 from app.models.parcel import Parcel
 from app.models.user import User
-from app import db
+from app.extensions import db
+
 from marshmallow import Schema, fields, ValidationError
 from datetime import datetime
 
