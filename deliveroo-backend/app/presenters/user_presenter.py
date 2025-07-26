@@ -2,7 +2,8 @@ from flask import jsonify
 from flask_jwt_extended import get_jwt_identity
 from app.models.parcel import Parcel
 from app.models.user import User
-from app import db
+from app.extensions import db
+
 from sqlalchemy.exc import SQLAlchemyError
 from app.schemas.parcel_schema import DestinationUpdateSchema
 from app.schemas.user_schema import UserDeleteSchema

@@ -1,4 +1,4 @@
-from app.config import ma
+from app import ma
 from app.models.status import Status
 
 class StatusSchema(ma.SQLAlchemySchema):

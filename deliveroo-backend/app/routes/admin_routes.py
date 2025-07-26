@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
 from app.models.parcel import Parcel
 from app.models.user import User
-from app.config import db
+from app.extensions import db
+
 from app.utils.decorators import admin_required
 
 admin_bp = Blueprint('admin_bp', __name__, url_prefix='/admin')

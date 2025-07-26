@@ -1,4 +1,4 @@
-from app.config import ma
+from app import ma
 from app.models.location import Location
 
 class LocationSchema(ma.SQLAlchemySchema):

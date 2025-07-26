@@ -2,7 +2,8 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.parcel import Parcel
 from app.models.user import User
-from app.config import db
+from app.extensions import db
+
 
 parcel_bp = Blueprint('parcel_bp', __name__, url_prefix='/parcels')
 
