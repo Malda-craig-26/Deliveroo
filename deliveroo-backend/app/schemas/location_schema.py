@@ -8,6 +8,7 @@ class LocationSchema(ma.SQLAlchemySchema):
         ordered = True
 
     id = ma.auto_field()
-    name = ma.auto_field()
+    city = ma.auto_field()
+    address = ma.auto_field()
     created_at = ma.auto_field()
     updated_at = ma.auto_field()

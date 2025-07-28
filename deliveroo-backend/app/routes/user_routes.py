@@ -11,12 +11,16 @@ user_bp = Blueprint('user_bp', __name__, url_prefix='/users')
 @admin_required
 def get_users():
     role = request.args.get("role")
+    include_deleted = request.args.get("include_deleted", "false").lower() == "true"
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
-    query = User.query.filter_by(is_deleted=False)
 
+    query = User.query
+    if not include_deleted:
+        query = query.filter_by(is_deleted=False)
     if role:
         query = query.filter(User.role.ilike(role))
+        
     pagination = query.paginate(page, per_page, error_out=False)
     users = [user.to_dict() for user in pagination.items]
 
@@ -53,9 +57,21 @@ def assign_role():
 @admin_required
 def delete_user(user_id):
     user = User.query.get_or_404(user_id)
+    if user.is_deleted:
+        return jsonify({"error": "User already deleted"}), 400
     user.is_deleted = True
     db.session.commit()
     return jsonify({"message": f"User {user.email} soft-deleted successfully"}), 200
 
+# PATCH /users/<int:user_id>/restore
+@user_bp.route('/<int:user_id>/restore', methods=['PATCH'])
+@admin_required
+def restore_user(user_id):
+    user = User.query.get_or_404(user_id)
+    if not user.is_deleted:
+        return jsonify({"error": "User is not deleted"}), 400
+    user.is_deleted = False
+    db.session.commit()
+    return jsonify({"message": f"User {user.email} restored successfully"}), 200
 
     

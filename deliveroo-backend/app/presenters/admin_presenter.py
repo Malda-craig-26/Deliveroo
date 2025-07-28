@@ -11,7 +11,8 @@ def get_all_users():
     users = User.query.all()
     users_data = [{
         "id": user.id,
-        "username": user.username,
+        "username": user.name
+,
         "email": user.email,
         "is_admin": user.is_admin
     } for user in users]
@@ -37,7 +38,7 @@ def promote_user(user_id):
 
     return jsonify({
         "status": "success",
-        "message": f"User '{user.username}' promoted to admin."
+        "message": f"User '{user.name}' promoted to admin."
     }), 200
 
 def demote_user(user_id):
@@ -60,12 +61,12 @@ def demote_user(user_id):
 
     return jsonify({
         "status": "success",
-        "message": f"User '{user.username}' demoted from admin."
+        "message": f"User '{user.name}' demoted from admin."
     }), 200
 
 def delete_user(user_id):
     """
-    Delete a user account.
+    Soft delete a user account.
     """
     user = User.query.get(user_id)
     if not user:
@@ -75,11 +76,11 @@ def delete_user(user_id):
     if user.id == current_user_id:
         return jsonify({"status": "error", "message": "You cannot delete your own account."}), 403
 
-    db.session.delete(user)
+    user.is_deleted = True
     db.session.commit()
 
     return jsonify({
         "status": "success",
-        "message": f"User '{user.username}' has been deleted."
+        "message": f"User '{user.name}' has been  soft-deleted."
     }), 200
 

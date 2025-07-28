@@ -3,7 +3,6 @@ from flask_jwt_extended import get_jwt_identity
 from app.models.parcel import Parcel
 from app.models.user import User
 from app.extensions import db
-
 from sqlalchemy.exc import SQLAlchemyError
 from app.schemas.parcel_schema import DestinationUpdateSchema
 from app.schemas.user_schema import UserDeleteSchema
@@ -55,8 +54,8 @@ def delete_user_account(requester_id, target_user_id, data=None):
     requester = User.query.get(requester_id)
     user = User.query.get(target_user_id)
 
-    if not user:
-        return jsonify({"error": "User not found"}), 404
+    if not user or user.is_deleted:
+        return jsonify({"error": "User not found or already deleted"}), 404
 
     # Only allow if user is admin or deleting their own account
     if not (requester.is_admin or requester_id == target_user_id):
@@ -73,7 +72,7 @@ def delete_user_account(requester_id, target_user_id, data=None):
             return jsonify({"error": "Incorrect password"}), 403
 
     try:
-        db.session.delete(user)
+        user.is_deleted = True
         db.session.commit()
         return jsonify({"status": "success", "message": "User account deleted"}), 200
     except SQLAlchemyError as e:

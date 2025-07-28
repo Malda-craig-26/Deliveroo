@@ -46,7 +46,8 @@ def register_user(data: dict):
         "message": "User registered successfully.",
         "data": {
             "user_id": user.id,
-            "username": user.username,
+            "username": user.name
+,
             "email": user.email
         }
     }), 201
