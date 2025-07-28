@@ -18,4 +18,4 @@ def update_user_profile_controller():
 def delete_user_account_controller():
     user_id = get_jwt_identity().get("id")
     data = request.get_json
-    return delete_user_account(user_id, user_id,data)
+    return delete_user_account(user_id,data)
