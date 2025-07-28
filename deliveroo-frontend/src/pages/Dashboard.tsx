@@ -16,7 +16,7 @@ const Dashboard = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   
-
+  // Redirect to home if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/');
@@ -132,7 +132,18 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 {orders.map((order) => (
-                  <OrderCard key={order.id} order={order} />
+                  <OrderCard 
+                    key={order.id} 
+                    order={order}
+                    onEditDestination={(orderId, newDestination) => {
+                      setOrders(prev => prev.map(o => 
+                        o.id === orderId ? { ...o, destination: newDestination } : o
+                      ));
+                    }}
+                    onCancelOrder={(orderId) => {
+                      setOrders(prev => prev.filter(o => o.id !== orderId));
+                    }}
+                  />
                 ))}
               </CardContent>
             </Card>
