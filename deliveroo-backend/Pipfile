@@ -7,13 +7,13 @@ name = "pypi"
 flask = "*"
 flask-sqlalchemy = "*"
 flask-migrate = "*"
-flask-cors = "*"
+
 python-dotenv = "*"
 werkzeug = "*"
 psycopg2-binary = "*"
 email-validator = "*"
 marshmallow = "*"
-flask-jwt-extended = "*"
+
 
 [dev-packages]
 
