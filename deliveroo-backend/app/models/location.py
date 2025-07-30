@@ -12,9 +12,10 @@ class Location(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
-    parcels = db.relationship('Parcel', back_populates='location', lazy=True)
-    destination_parcels = db.relationship('Destination', back_populates='location', lazy=True)
-
+    origin_parcels = db.relationship('Parcel', foreign_keys='Parcel.origin_id', back_populates='origin', lazy=True)
+    destination_parcels = db.relationship('Parcel', foreign_keys='Parcel.destination_id', back_populates='destination', lazy=True)
+    present_location_parcels = db.relationship('Parcel', foreign_keys='Parcel.present_location_id', back_populates='present_location', lazy=True)
+    
     def to_dict(self):
         return {
             "id": self.id,

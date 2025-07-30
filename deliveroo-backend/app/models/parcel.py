@@ -18,9 +18,9 @@ class Parcel(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
-    origin = db.relationship('Location', foreign_keys=[origin_id], back_populates='parcels')
+    origin = db.relationship('Location', foreign_keys=[origin_id], back_populates='origin_parcels')
     destination = db.relationship('Location', foreign_keys=[destination_id], back_populates='destination_parcels')
-    present_location = db.relationship('Location', foreign_keys=[present_location_id], back_populates='parcels')
+    present_location = db.relationship('Location', foreign_keys=[present_location_id], back_populates='present_location_parcels')
     status = db.relationship('Status', back_populates='parcels')
 
     def to_dict(self):
