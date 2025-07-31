@@ -20,30 +20,76 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
   const { toast } = useToast();
   const { login } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock successful login
-    login({
-      id: "1",
-      name: "John Doe",
-      email: email
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsLoading(true);
+
+  try {
+    // 1. Login request
+    const loginResponse = await fetch("http://localhost:5000/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
     });
-    
+
+    if (!loginResponse.ok) {
+      const errorData = await loginResponse.json();
+      throw new Error(errorData.message || "Login failed");
+    }
+
+    const loginData = await loginResponse.json();
+    const token = loginData.access_token;
+
+    if (!token) {
+      throw new Error("No token received");
+    }
+
+    localStorage.setItem("access_token", token);
+
+    // 2. Fetch profile with token
+    const profileResponse = await fetch("http://localhost:5000/auth/profile", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: "include", // optional unless cookies are used
+    });
+
+    if (!profileResponse.ok) {
+      const errorData = await profileResponse.json();
+      throw new Error(errorData.message || "Failed to fetch profile");
+    }
+
+    const user = await profileResponse.json();
+
+    // 3. Save user info
+    login(user);
+
     toast({
       title: "Login Successful",
-      description: "Welcome back to Deliveroo!",
+      description: `Welcome back, ${user.name || user.email}`,
     });
-    
-    setIsLoading(false);
+
     onOpenChange(false);
     setEmail("");
     setPassword("");
-  };
+  } catch (error) {
+    console.error("Login Error:", error);
+
+    toast({
+      title: "Login Failed",
+      description: (error as Error).message,
+      variant: "destructive",
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

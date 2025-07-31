@@ -4,17 +4,16 @@ from flask_jwt_extended import create_access_token
 from sqlalchemy.exc import IntegrityError
 from email_validator import validate_email, EmailNotValidError
 
-
 def register_user(data: dict):
     """
     Register a new user.
     """
     from app.models.user import User
-    username = data.get("username")
+    name = data.get("username")
     email = data.get("email")
     password = data.get("password")
 
-    if not username or not email or not password:
+    if not name or not email or not password:
         return jsonify({
             "status": "error",
             "message": "All fields (username, email, password) are required."
@@ -28,7 +27,7 @@ def register_user(data: dict):
             "message": str(e)
         }), 400
 
-    user = User(username=username, email=email)
+    user = User(name=name, email=email)
     user.set_password(password)
 
     try:
@@ -38,7 +37,7 @@ def register_user(data: dict):
         db.session.rollback()
         return jsonify({
             "status": "error",
-            "message": "Username or email already exists."
+            "message": "Name or email already exists."
         }), 409
 
     return jsonify({
@@ -46,8 +45,7 @@ def register_user(data: dict):
         "message": "User registered successfully.",
         "data": {
             "user_id": user.id,
-            "username": user.name
-,
+            "name": user.name,
             "email": user.email
         }
     }), 201
@@ -71,7 +69,9 @@ def login_user(data: dict):
     if user and user.check_password(password):
         token = create_access_token(identity={
             "id": user.id,
-            "is_admin": user.is_admin
+            "name": user.name,
+            "email": user.email,
+            "is_admin": user.role == 'admin'
         })
 
         return jsonify({

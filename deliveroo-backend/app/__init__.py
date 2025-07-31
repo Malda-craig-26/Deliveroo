@@ -1,14 +1,8 @@
 from flask import Flask, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
 from flask_cors import CORS
 from .config import Config
-
-# Extensions
-db = SQLAlchemy()
-migrate = Migrate()
-jwt = JWTManager()
+from app.extensions import db, migrate, jwt
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -18,7 +12,7 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
-    CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
+    CORS(app, origins=[ "http://localhost:8080"], supports_credentials=True)
 
     # Health & Debug Routes
     @app.route("/", methods=["GET"])
