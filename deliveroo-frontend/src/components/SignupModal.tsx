@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -27,7 +26,7 @@ const SignupModal = ({ open, onOpenChange, onSignupSuccess }: SignupModalProps) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Password Mismatch",
@@ -36,38 +35,63 @@ const SignupModal = ({ open, onOpenChange, onSignupSuccess }: SignupModalProps) 
       });
       return;
     }
-    
+
     setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock successful signup and login
-    login({
-      id: "1",
-      name: formData.name,
-      email: formData.email
-    });
-    
-    toast({
-      title: "Account Created",
-      description: "Welcome to Deliveroo! Proceed to payment to unlock all features.",
-    });
-    
-    setIsLoading(false);
-    onOpenChange(false);
-    
-    // Reset form
-    setFormData({
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: ""
-    });
-    
-    // Trigger M-Pesa payment after successful signup
-    if (onSignupSuccess) {
-      onSignupSuccess();
+
+    try {
+      const response = await fetch("http://localhost:5000/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: formData.name, // ✅ MUST match backend
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Signup failed");
+      }
+
+      toast({
+        title: "Account Created",
+        description: "Welcome to Deliveroo! Proceed to payment to unlock all features.",
+      });
+
+      // Optional: Auto-login the user
+      login({
+        id: result.data.user_id,
+        name: result.data.name,
+        email: result.data.email,
+      });
+
+      onOpenChange(false);
+
+      // Reset form
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: ""
+      });
+
+      // Optional: Trigger next steps (e.g. payment)
+      if (onSignupSuccess) {
+        onSignupSuccess();
+      }
+
+    } catch (error: any) {
+      toast({
+        title: "Signup Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -91,7 +115,7 @@ const SignupModal = ({ open, onOpenChange, onSignupSuccess }: SignupModalProps) 
             Join Deliveroo to start shipping packages worldwide
           </DialogDescription>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
@@ -108,7 +132,7 @@ const SignupModal = ({ open, onOpenChange, onSignupSuccess }: SignupModalProps) 
               />
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="signup-email">Email</Label>
             <div className="relative">
@@ -124,7 +148,7 @@ const SignupModal = ({ open, onOpenChange, onSignupSuccess }: SignupModalProps) 
               />
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="signup-password">Password</Label>
             <div className="relative">
@@ -140,7 +164,7 @@ const SignupModal = ({ open, onOpenChange, onSignupSuccess }: SignupModalProps) 
               />
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="confirm-password">Confirm Password</Label>
             <div className="relative">
@@ -156,9 +180,9 @@ const SignupModal = ({ open, onOpenChange, onSignupSuccess }: SignupModalProps) 
               />
             </div>
           </div>
-          
-          <Button 
-            type="submit" 
+
+          <Button
+            type="submit"
             className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
             disabled={isLoading}
           >
@@ -171,3 +195,4 @@ const SignupModal = ({ open, onOpenChange, onSignupSuccess }: SignupModalProps) 
 };
 
 export default SignupModal;
+
