@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 interface User {
   id: string;
@@ -39,15 +39,27 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('access_token'); // Clear token on logout
   };
 
   // Check for stored user on mount
-  useState(() => {
+  useEffect(() => {
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    const token = localStorage.getItem('access_token');
+    if (storedUser && token) {
+      fetch('http://localhost:5000/auth/profile', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => res.ok ? res.json() : null)
+        .then((user) => {
+          if (user) {
+            setUser(user);
+          }
+        });
     }
-  });
+  }, []);
 
   const value = {
     user,
