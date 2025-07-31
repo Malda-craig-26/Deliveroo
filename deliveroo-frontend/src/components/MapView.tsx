@@ -1,57 +1,121 @@
-
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Polyline,
+  useMap,
+} from "react-leaflet";
+import type { LatLngExpression, LatLngTuple, LatLngBoundsExpression } from "leaflet";
+import L from "leaflet";
+import axios from "axios";
+import "leaflet/dist/leaflet.css";
 import { MapPin, Navigation, Clock } from "lucide-react";
 
+// ✅ Load API key from .env
+const ORS_API_KEY = import.meta.env.VITE_ORS_API_KEY;
+
+// ✅ Explicitly define start and end as LatLngTuple (tuple of exactly two numbers)
+const start: LatLngTuple = [49.41461, 8.681495]; // [lat, lon]
+const end: LatLngTuple = [49.420318, 8.687872];
+
+const FitBounds = ({ bounds }: { bounds: LatLngBoundsExpression }) => {
+  const map = useMap();
+  useEffect(() => {
+    map.fitBounds(bounds);
+  }, [bounds, map]);
+  return null;
+};
+
 const MapView = () => {
-  const mapRef = useRef<HTMLDivElement>(null);
+  const [route, setRoute] = useState<LatLngTuple[]>([]);
+  const [distance, setDistance] = useState("");
+  const [duration, setDuration] = useState("");
 
   useEffect(() => {
-    // This is where Google Maps would be initialized
-    console.log("Map component mounted - ready for Google Maps integration");
+    const fetchRoute = async () => {
+      try {
+        const res = await axios.post(
+          "https://api.openrouteservice.org/v2/directions/driving-car/geojson",
+          {
+            coordinates: [
+              [start[1], start[0]], // [lon, lat]
+              [end[1], end[0]],
+            ],
+          },
+          {
+            headers: {
+              Authorization: ORS_API_KEY,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const geometry: LatLngTuple[] = res.data.features[0].geometry.coordinates.map(
+          ([lon, lat]: number[]) => [lat, lon]
+        );
+
+        const summary = res.data.features[0].properties.summary;
+        setRoute(geometry);
+        setDistance((summary.distance / 1000).toFixed(1) + " km");
+        setDuration(Math.round(summary.duration / 60) + " mins");
+      } catch (err) {
+        console.error("Failed to fetch route from ORS", err);
+      }
+    };
+
+    fetchRoute();
   }, []);
 
   return (
     <div className="relative">
-      <div 
-        ref={mapRef} 
-        className="w-full h-96 bg-gradient-to-br from-blue-100 to-green-100 rounded-lg flex items-center justify-center relative overflow-hidden"
+      <MapContainer
+        center={start}
+        zoom={14}
+        style={{ height: "24rem", width: "100%" }}
+        scrollWheelZoom={true}
+        className="rounded-lg overflow-hidden"
       >
-        {/* Placeholder for Google Maps */}
-        <div className="text-center">
-          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg mb-4 mx-auto">
-            <MapPin className="w-8 h-8 text-blue-600" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">Interactive Map</h3>
-          <p className="text-gray-600 text-sm">Google Maps integration ready</p>
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; OpenStreetMap contributors'
+        />
+        <Marker position={start} />
+        <Marker position={end} />
+        {route.length > 0 && (
+          <>
+            <Polyline positions={route} color="blue" />
+            <FitBounds bounds={[start, end]} />
+          </>
+        )}
+      </MapContainer>
+
+      {/* Map Info Overlays */}
+      <div className="absolute top-4 left-4 bg-white rounded-lg p-3 shadow-lg">
+        <div className="flex items-center space-x-2 text-sm">
+          <div className="w-3 h-3 bg-green-500 rounded-full" />
+          <span className="text-gray-700">Pickup Location</span>
         </div>
-        
-        {/* Mock map elements */}
-        <div className="absolute top-4 left-4 bg-white rounded-lg p-3 shadow-lg">
-          <div className="flex items-center space-x-2 text-sm">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span className="text-gray-700">Pickup Location</span>
-          </div>
+      </div>
+
+      <div className="absolute top-4 right-4 bg-white rounded-lg p-3 shadow-lg">
+        <div className="flex items-center space-x-2 text-sm">
+          <div className="w-3 h-3 bg-red-500 rounded-full" />
+          <span className="text-gray-700">Destination</span>
         </div>
-        
-        <div className="absolute top-4 right-4 bg-white rounded-lg p-3 shadow-lg">
-          <div className="flex items-center space-x-2 text-sm">
-            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-            <span className="text-gray-700">Destination</span>
-          </div>
+      </div>
+
+      <div className="absolute bottom-4 left-4 bg-white rounded-lg p-3 shadow-lg">
+        <div className="flex items-center space-x-2 text-sm">
+          <Navigation className="w-4 h-4 text-blue-600" />
+          <span className="text-gray-700">{distance}</span>
         </div>
-        
-        <div className="absolute bottom-4 left-4 bg-white rounded-lg p-3 shadow-lg">
-          <div className="flex items-center space-x-2 text-sm">
-            <Navigation className="w-4 h-4 text-blue-600" />
-            <span className="text-gray-700">15.2 km</span>
-          </div>
-        </div>
-        
-        <div className="absolute bottom-4 right-4 bg-white rounded-lg p-3 shadow-lg">
-          <div className="flex items-center space-x-2 text-sm">
-            <Clock className="w-4 h-4 text-orange-600" />
-            <span className="text-gray-700">25 mins</span>
-          </div>
+      </div>
+
+      <div className="absolute bottom-4 right-4 bg-white rounded-lg p-3 shadow-lg">
+        <div className="flex items-center space-x-2 text-sm">
+          <Clock className="w-4 h-4 text-orange-600" />
+          <span className="text-gray-700">{duration}</span>
         </div>
       </div>
     </div>
