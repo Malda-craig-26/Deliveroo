@@ -60,7 +60,7 @@ interface Driver {
 }
 
 const AdminDashboard = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated,loading } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [searchTerm, setSearchTerm] = useState("");
@@ -85,10 +85,13 @@ const AdminDashboard = () => {
   ]);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!loading && isAuthenticated) {
       navigate("/");
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, loading, navigate]);
+  
+ if (loading) return <div>Loading...</div>;
+if (!isAuthenticated) return null; 
 
   const stats = [
     { title: "Total Users", value: users.length, icon: Users, change: "+12%", color: "text-blue-600" },

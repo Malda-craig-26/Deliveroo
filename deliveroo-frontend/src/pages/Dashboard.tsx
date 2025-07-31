@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,22 +6,14 @@ import DashboardHeader from "@/components/DashboardHeader";
 import CreateOrderModal from "@/components/CreateOrderModal";
 import OrderCard from "@/components/OrderCard";
 import MapView from "@/components/MapView";
-import AuthGuard from "@/components/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
-  const [showCreateOrder, setShowCreateOrder] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
-  
-  // Redirect to home if not authenticated
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/');
-    }
-  }, [isAuthenticated, navigate]);
 
+  const [showCreateOrder, setShowCreateOrder] = useState(false);
   const [orders, setOrders] = useState([
     {
       id: "DEL001",
@@ -75,8 +66,18 @@ const Dashboard = () => {
     }
   ];
 
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      navigate('/');
+    }
+  }, [loading, isAuthenticated, navigate]);
+
+  if (loading) {
+    return <p className="text-center mt-10 text-gray-500">Loading dashboard...</p>;
+  }
+
   if (!isAuthenticated) {
-    return null; // or loading spinner
+    return null; // already redirected
   }
 
   return (
